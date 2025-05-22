@@ -1,5 +1,4 @@
-# name
-DiscordBot Template
+# name　DiscordBot Template
 
 ## Description
 Template for discord.js v14
