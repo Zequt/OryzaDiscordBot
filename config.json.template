@@ -1,6 +1,0 @@
-{
-    "token": "<DISCORDBOT TOKEN>",
-    "clientId": "<DISCORDBOT CLIENT(=USER) ID>",
-    "mongoURI": "<DB TOKEN IF YOU HAVE>",
-    "errReportChId": "<DISCORDBOT ERR REPORTING CHANNEL ID>"
-}
