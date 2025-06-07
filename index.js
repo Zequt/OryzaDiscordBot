@@ -18,7 +18,12 @@ const client = new Client({
     partials: [User, Message, GuildMember, ThreadMember]
 });
 // We recommend attaching a .commands property to your client instance so that you can access your commands in other files. 
-client.config = require('./config.json');
+client.config = {
+    token: process.env.DISCORD_TOKEN,
+    clientId: process.env.DISCORD_CLIENT_ID,
+    mongoURI: process.env.MONGO_URI,
+    errReportChId: process.env.ERROR_REPORT_CHANNEL_ID
+};
 client.commands = new Collection();
 
 //mongoDB connections

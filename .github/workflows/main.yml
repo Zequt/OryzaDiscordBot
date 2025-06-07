@@ -17,3 +17,8 @@ jobs:
 
     - name: Restart Bot with pm2
       run: pm2 restart OryzaDiscordBot
+      env:
+        DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+        DISCORD_CLIENT_ID: ${{ secrets.DISCORD_CLIENT_ID }}
+        MONGO_URI: ${{ secrets.MONGO_URI }}
+        ERROR_REPORT_CHANNEL_ID: ${{ secrets.ERROR_REPORT_CHANNEL_ID }}
