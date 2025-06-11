@@ -22,7 +22,8 @@ client.config = {
     token: process.env.DISCORD_TOKEN,
     clientId: process.env.DISCORD_CLIENT_ID,
     mongoURI: process.env.MONGO_URI,
-    errReportChId: process.env.ERROR_REPORT_CHANNEL_ID
+    errReportChId: process.env.ERROR_REPORT_CHANNEL_ID,
+    geminiApiKey: process.env.GEMINI_API_KEY
 };
 client.commands = new Collection();
 
