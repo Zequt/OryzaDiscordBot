@@ -17,7 +17,8 @@ module.exports = {
                 .setDescription('AIに尋ねる質問内容')
                 .setRequired(true)),
 
-    async execute(interaction, genAI) {
+    async execute(interaction, client) {
+        const genAI = client.genAI;
         const messageId = interaction.options.getString('message_id', true);
         const question = interaction.options.getString('question', true);
         const channel = interaction.channel;
