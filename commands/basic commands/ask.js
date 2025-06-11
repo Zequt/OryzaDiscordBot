@@ -1,72 +1,69 @@
 const { SlashCommandBuilder, Collection, DiscordAPIError } = require('discord.js');
 
-// 定数 (必要に応じて summarize.js と共通化または別個に管理)
+// 定数
 const MAX_FETCH_LIMIT = 100; // Discord APIが一度に取得を許可する最大メッセージ数
-const MAX_REFERENCE_COUNT = 200; // 質問の参照とする最大メッセージ数
 const MAX_DISCORD_MESSAGE_LENGTH = 2000; // Discordの最大メッセージ長
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('ask')
-        .setDescription('指定された件数分のメッセージを参照し、質問に回答します。')
-        .addIntegerOption(option =>
-            option.setName('count')
-                .setDescription(`回答の参照にする直近のメッセージ数を指定 (1〜${MAX_REFERENCE_COUNT})`)
-                .setRequired(true)
-                .setMinValue(1)
-                .setMaxValue(MAX_REFERENCE_COUNT))
+        .setDescription('指定されたメッセージID以降のメッセージを参照し、質問に回答します。')
+        .addStringOption(option =>
+            option.setName('message_id')
+                .setDescription('参照開始するメッセージのID')
+                .setRequired(true))
         .addStringOption(option =>
             option.setName('question')
                 .setDescription('AIに尋ねる質問内容')
                 .setRequired(true)),
 
     async execute(interaction, genAI) {
-        const referenceCount = interaction.options.getInteger('count', true);
+        const messageId = interaction.options.getString('message_id', true);
         const question = interaction.options.getString('question', true);
         const channel = interaction.channel;
 
         await interaction.deferReply(); // 公開応答をデフォルトとします
 
         try {
-            // 1. 参照メッセージの取得
-            let messagesForReference = new Collection();
-            let lastId = interaction.id; // コマンドメッセージより前のメッセージを取得
-
-            if (referenceCount > 0) {
-                let remainingToFetch = referenceCount;
-                console.log(`[ask] ${referenceCount}件の参照メッセージを取得開始...`);
-
-                while (remainingToFetch > 0) {
-                    const fetchLimit = Math.min(remainingToFetch, MAX_FETCH_LIMIT);
-                    const fetched = await channel.messages.fetch({
-                        limit: fetchLimit,
-                        before: lastId,
-                    });
-
-                    if (fetched.size === 0) {
-                        console.log('[ask] これ以上履歴にメッセージが見つかりません。');
-                        break;
-                    }
-
-                    fetched.forEach(msg => {
-                        // messagesForReference のサイズが referenceCount に達するまで追加
-                        if (messagesForReference.size < referenceCount) {
-                            messagesForReference.set(msg.id, msg);
-                        }
-                    });
-
-                    lastId = fetched.last().id;
-                    remainingToFetch -= fetched.size; // 取得した分を減算
-
-                    // messagesForReference のサイズが referenceCount に達したらループを抜ける
-                    if (messagesForReference.size >= referenceCount) {
-                        break;
-                    }
-                }
-                console.log(`[ask] メッセージ取得完了。収集した参照メッセージ数: ${messagesForReference.size}`);
+            // 1. 指定されたメッセージIDが存在するか確認
+            let startMessage;
+            try {
+                startMessage = await channel.messages.fetch(messageId);
+            } catch (error) {
+                await interaction.editReply({ content: '指定されたメッセージIDが見つかりません。' });
+                return;
             }
 
-            if (messagesForReference.size === 0 && referenceCount > 0) {
+            // 2. 指定されたメッセージ以降のメッセージを取得
+            let messagesForReference = new Collection();
+            let lastId = null;
+            
+            console.log(`[ask] メッセージID ${messageId} 以降のメッセージを取得開始...`);
+
+            // 指定されたメッセージを追加
+            messagesForReference.set(startMessage.id, startMessage);
+
+            while (true) {
+                const fetched = await channel.messages.fetch({
+                    limit: MAX_FETCH_LIMIT,
+                    after: lastId || messageId,
+                });
+
+                if (fetched.size === 0) {
+                    console.log('[ask] これ以上新しいメッセージが見つかりません。');
+                    break;
+                }
+
+                fetched.forEach(msg => {
+                    messagesForReference.set(msg.id, msg);
+                });
+
+                lastId = fetched.first().id;
+            }
+
+            console.log(`[ask] メッセージ取得完了。収集した参照メッセージ数: ${messagesForReference.size}`);
+
+            if (messagesForReference.size === 0) {
                 await interaction.editReply({ content: '参照対象となるメッセージが見つかりませんでした。' });
                 return;
             }
@@ -135,7 +132,7 @@ ${question}
             // 4. 回答の投稿 (必要に応じて分割)
             let answerText = answer;
             let answerChunks = [];
-            const header = `**質問「${question}」への回答 (参照メッセージ: ${sortedMessages.size}件):**\n`;
+            const header = `**質問「${question}」への回答 (参照メッセージ: ${sortedMessages.size}件、開始ID: ${messageId}):**\n`;
 
             // ヘッダーと最初のチャンク
             let firstChunkContent = header;
