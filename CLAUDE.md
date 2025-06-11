@@ -72,6 +72,8 @@ GitHub Actionsによる自動デプロイ：
 - コマンド追加時は適切なディレクトリ（basic commands/private commands）に配置
 - Gemini AI使用時はAPIキー設定を確認
 - 新しい環境変数追加時はGitHub Actionsワークフローも更新
+- 全てのコマンドの`execute`関数は`interaction`と`client`の2つの引数を受け取る
+- askコマンドでGemini AIを使用する場合は`client.genAI`からアクセスする
 
 ## テスト・ビルドコマンド
 ```bash
@@ -84,3 +86,10 @@ npm run build  # ビルド実行（設定があれば）
 - Gemini API関連エラー: GEMINI_API_KEYの設定を確認
 - Discord接続エラー: DISCORD_TOKENの有効性を確認
 - PM2プロセスエラー: PM2ログを確認（`pm2 logs OryzaDiscordBot`）
+- コマンドが応答しない場合: `interactionCreate.js`でclientオブジェクトが正しく渡されているか確認
+- reload機能が動作しない場合: `commandHandler.js`でキャッシュクリアが正しく実行されているか確認
+
+## 最近の修正履歴
+- **コマンド引数の統一**: 全てのコマンドで`execute(interaction, client)`の形式に統一
+- **reload機能の修正**: モジュールキャッシュクリアとエラーハンドリングを追加
+- **ping/askコマンドの修正**: interactionCreate.jsでの引数渡しを統一化

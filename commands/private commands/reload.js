@@ -15,6 +15,11 @@ module.exports = {
 			subcommand
 				.setName("events")
 				.setDescription("[BOT DEV ONLY] Reload all events")
+		)
+		.addSubcommand((subcommand) =>
+			subcommand
+				.setName("guild")
+				.setDescription("[BOT DEV ONLY] Refresh guild commands")
 		),
 
 	async execute(interaction, client) {
@@ -22,7 +27,13 @@ module.exports = {
 
 		// Block non-devs
 		await client.application.fetch();
-		if (user.id !==  await client.application.owner.id) {
+		
+		// チームアプリケーションかどうかをチェック
+		const isAuthorized = client.application.owner 
+			? user.id === client.application.owner.id  // 個人所有の場合
+			: client.application.team?.members.some(member => member.user.id === user.id); // チーム所有の場合
+		
+		if (!isAuthorized) {
 			return interaction.reply({
 				embeds: [
 					new EmbedBuilder()
@@ -52,7 +63,44 @@ module.exports = {
 							embed.setDescription("♻ Events has been reloaded successfully."),
 						],
 					});
-					console.log(`${user} reloaded commands.`);
+					console.log(`${user} reloaded events.`);
+					break;
+				case "guild":
+					try {
+						// 現在のギルドのコマンドをリフレッシュ
+						const guild = interaction.guild;
+						if (!guild) {
+							return interaction.reply({
+								embeds: [
+									new EmbedBuilder()
+										.setColor("Red")
+										.setDescription("This command can only be used in a guild."),
+								],
+							});
+						}
+						
+						// 現在登録されているコマンドを取得
+						const commands = Array.from(client.commands.values()).map(cmd => cmd.data.toJSON());
+						
+						// ギルドコマンドを設定
+						await guild.commands.set(commands);
+						
+						interaction.reply({
+							embeds: [
+								embed.setDescription(`♻ Guild commands refreshed successfully for ${guild.name}.`),
+							],
+						});
+						console.log(`${user} refreshed guild commands for ${guild.name}.`);
+					} catch (error) {
+						console.error('Error refreshing guild commands:', error);
+						interaction.reply({
+							embeds: [
+								new EmbedBuilder()
+									.setColor("Red")
+									.setDescription("❌ Failed to refresh guild commands."),
+							],
+						});
+					}
 					break;
 			}
 		}

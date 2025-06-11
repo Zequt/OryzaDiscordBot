@@ -10,7 +10,13 @@ module.exports = {
 
 		// Block non-devs
 		await client.application.fetch();
-		if (user.id !== client.application.owner.id) {
+		
+		// チームアプリケーションかどうかをチェック
+		const isAuthorized = client.application.owner 
+			? user.id === client.application.owner.id  // 個人所有の場合
+			: client.application.team?.members.some(member => member.user.id === user.id); // チーム所有の場合
+		
+		if (!isAuthorized) {
 			return await interaction.reply({
 				embeds: [
 					new EmbedBuilder()
