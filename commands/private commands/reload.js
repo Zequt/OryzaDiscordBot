@@ -28,25 +28,20 @@ module.exports = {
 		// Block non-devs
 		await client.application.fetch();
 		
-		console.log('=== DETAILED DEBUG INFO ===');
-		console.log(`User ID: ${user.id}`);
-		console.log(`Application Owner:`, client.application.owner);
-		console.log(`Application Team:`, client.application.team);
+		// 実行者が開発者かどうかチェック
+		let isAuthorized = false;
 		
-		if (client.application.team) {
-			console.log(`Team Members:`, client.application.team.members);
-			client.application.team.members.forEach((member, index) => {
-				console.log(`Member ${index}:`, member.user.id, member.user.username);
-			});
+		if (client.application.owner && client.application.owner.constructor.name === 'Team') {
+			// チーム所有の場合（ownerがTeam）
+			const team = client.application.owner;
+			isAuthorized = team.members?.some(member => member.user.id === user.id);
+		} else if (client.application.owner && client.application.owner.constructor.name === 'User') {
+			// 個人所有の場合（ownerがUser）
+			isAuthorized = user.id === client.application.owner.id;
+		} else if (client.application.team) {
+			// 旧形式のチーム所有の場合
+			isAuthorized = client.application.team.members?.some(member => member.user.id === user.id);
 		}
-		
-		// チームアプリケーションかどうかをチェック
-		const isAuthorized = client.application.owner 
-			? user.id === client.application.owner.id  // 個人所有の場合
-			: client.application.team?.members.some(member => member.user.id === user.id); // チーム所有の場合
-		
-		console.log(`Is Authorized: ${isAuthorized}`);
-		console.log('=== END DEBUG INFO ===');
 		
 		if (!isAuthorized) {
 			return interaction.reply({

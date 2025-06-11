@@ -11,10 +11,20 @@ module.exports = {
 		// Block non-devs
 		await client.application.fetch();
 		
-		// チームアプリケーションかどうかをチェック
-		const isAuthorized = client.application.owner 
-			? user.id === client.application.owner.id  // 個人所有の場合
-			: client.application.team?.members.some(member => member.user.id === user.id); // チーム所有の場合
+		// 実行者が開発者かどうかチェック
+		let isAuthorized = false;
+		
+		if (client.application.owner && client.application.owner.constructor.name === 'Team') {
+			// チーム所有の場合（ownerがTeam）
+			const team = client.application.owner;
+			isAuthorized = team.members?.some(member => member.user.id === user.id);
+		} else if (client.application.owner && client.application.owner.constructor.name === 'User') {
+			// 個人所有の場合（ownerがUser）
+			isAuthorized = user.id === client.application.owner.id;
+		} else if (client.application.team) {
+			// 旧形式のチーム所有の場合
+			isAuthorized = client.application.team.members?.some(member => member.user.id === user.id);
+		}
 		
 		if (!isAuthorized) {
 			return await interaction.reply({

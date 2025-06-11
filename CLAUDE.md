@@ -49,8 +49,9 @@ GitHub Secretsで管理される環境変数：
 ### コマンド
 - `/ping`: ボットの応答時間を確認
 - `/ask <message_id> <question>`: 指定されたメッセージID以降のすべてのメッセージを参照してAIが質問に回答
-- `/reload`: コマンドをリロード（プライベート）
-- `/runningserver`: サーバー実行状態を確認（プライベート）
+- `/developers`: ボットの開発者情報とチームメンバーを表示
+- `/reload commands|events|guild`: コマンド・イベント・ギルドコマンドをリロード（プライベート）
+- `/showrunserver`: サーバー実行状態を確認（プライベート）
 
 ### Ask コマンド詳細
 - 指定されたメッセージID以降のすべてのメッセージを参照してAIが回答
@@ -75,6 +76,14 @@ GitHub Actionsによる自動デプロイ：
 - 全てのコマンドの`execute`関数は`interaction`と`client`の2つの引数を受け取る
 - askコマンドでGemini AIを使用する場合は`client.genAI`からアクセスする
 
+## 権限管理
+### Private Commands
+- `private commands`フォルダ内のコマンドは開発者のみ実行可能
+- 各コマンドファイル内で個別に権限チェックを実装
+- **チーム所有**: `client.application.owner`が`Team`の場合、チームメンバー全員が使用可能
+- **個人所有**: `client.application.owner`が`User`の場合、所有者のみ使用可能
+- **権限チェック方法**: `constructor.name`で型を判定し、適切なメンバーチェックを実行
+
 ## テスト・ビルドコマンド
 ```bash
 npm install    # 依存関係インストール
@@ -92,4 +101,8 @@ npm run build  # ビルド実行（設定があれば）
 ## 最近の修正履歴
 - **コマンド引数の統一**: 全てのコマンドで`execute(interaction, client)`の形式に統一
 - **reload機能の修正**: モジュールキャッシュクリアとエラーハンドリングを追加
-- **ping/askコマンドの修正**: interactionCreate.jsでの引数渡しを統一化
+- **ping/askコマンドの修正**: interactionCreate.jsでの引数渡しを統一化とWebSocket ping エラー対応
+- **guild commandリフレッシュ機能**: `/reload guild`サブコマンドを追加
+- **developersコマンド追加**: ボットの開発者情報とチームメンバーを表示する一般コマンド
+- **権限チェック統一**: チーム所有・個人所有の両方に対応した統一的な権限チェック実装
+- **Discord.js v14対応**: `client.application.owner`の型判定による正確なチーム/個人判別
