@@ -20,6 +20,11 @@ module.exports = {
 			subcommand
 				.setName("guild")
 				.setDescription("[BOT DEV ONLY] Refresh guild commands")
+		)
+		.addSubcommand((subcommand) =>
+			subcommand
+				.setName("clearguild")
+				.setDescription("[BOT DEV ONLY] Clear all guild commands")
 		),
 
 	async execute(interaction, client) {
@@ -108,6 +113,40 @@ module.exports = {
 								new EmbedBuilder()
 									.setColor("Red")
 									.setDescription("❌ Failed to refresh guild commands."),
+							],
+						});
+					}
+					break;
+				case "clearguild":
+					try {
+						// 現在のギルドのコマンドをすべてクリア
+						const guild = interaction.guild;
+						if (!guild) {
+							return interaction.reply({
+								embeds: [
+									new EmbedBuilder()
+										.setColor("Red")
+										.setDescription("This command can only be used in a guild."),
+								],
+							});
+						}
+						
+						// ギルドコマンドをすべて削除（空配列を設定）
+						await guild.commands.set([]);
+						
+						interaction.reply({
+							embeds: [
+								embed.setDescription(`🗑️ All guild commands cleared successfully for ${guild.name}.`),
+							],
+						});
+						console.log(`${user} cleared all guild commands for ${guild.name}.`);
+					} catch (error) {
+						console.error('Error clearing guild commands:', error);
+						interaction.reply({
+							embeds: [
+								new EmbedBuilder()
+									.setColor("Red")
+									.setDescription("❌ Failed to clear guild commands."),
 							],
 						});
 					}
