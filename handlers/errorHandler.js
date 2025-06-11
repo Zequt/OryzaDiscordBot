@@ -1,5 +1,4 @@
 const { Client, EmbedBuilder } = require('discord.js');
-const { errReportChId } = require('../config.json');
 
 /**
  * @param { Client } client
@@ -13,7 +12,7 @@ async function loadErrors(client) {
             return;
         }
 
-        let botCh = await client.channels.cache.get(errReportChId);
+        let botCh = await client.channels.cache.get(client.config.errReportChId);
         if (!botCh) botCh = await client.application.owner; //DM when unable to get bot-channel obj
     
         await botCh.send({content: `${client.application.owner}`, embeds: [new EmbedBuilder()
