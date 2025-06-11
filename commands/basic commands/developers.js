@@ -13,11 +13,42 @@ module.exports = {
 			.setColor("Blue")
 			.setTimestamp();
 
+		console.log('=== APPLICATION DEBUG ===');
+		console.log('Owner:', client.application.owner);
+		console.log('Team:', client.application.team);
+		console.log('Owner type:', typeof client.application.owner);
 		if (client.application.owner) {
+			console.log('Owner constructor:', client.application.owner.constructor.name);
+		}
+		console.log('=== END DEBUG ===');
+
+		// Discord.js v14では、ownerがTeamかUserかを判定
+		if (client.application.owner && client.application.owner.constructor.name === 'Team') {
+			// チーム所有の場合
+			const team = client.application.owner;
+			embed.addFields({
+				name: "Team",
+				value: team.name || "Unknown Team",
+				inline: false
+			});
+
+			if (team.members && team.members.size > 0) {
+				const memberList = team.members
+					.map(member => `<@${member.user.id}> (${member.user.username || member.user.globalName || 'Unknown'})`)
+					.join('\n');
+				
+				embed.addFields({
+					name: `Team Members (${team.members.size})`,
+					value: memberList,
+					inline: false
+				});
+			}
+		} else if (client.application.owner && client.application.owner.constructor.name === 'User') {
 			// 個人所有の場合
+			const owner = client.application.owner;
 			embed.addFields({
 				name: "Owner",
-				value: `<@${client.application.owner.id}> (${client.application.owner.username})`,
+				value: `<@${owner.id}> (${owner.username || owner.globalName || 'Unknown'})`,
 				inline: false
 			});
 		} else if (client.application.team) {
@@ -42,9 +73,19 @@ module.exports = {
 		}
 
 		// 実行者が開発者かどうかチェック
-		const isAuthorized = client.application.owner 
-			? interaction.user.id === client.application.owner.id  // 個人所有の場合
-			: client.application.team?.members.some(member => member.user.id === interaction.user.id); // チーム所有の場合
+		let isAuthorized = false;
+		
+		if (client.application.owner && client.application.owner.constructor.name === 'Team') {
+			// チーム所有の場合（ownerがTeam）
+			const team = client.application.owner;
+			isAuthorized = team.members?.some(member => member.user.id === interaction.user.id);
+		} else if (client.application.owner && client.application.owner.constructor.name === 'User') {
+			// 個人所有の場合（ownerがUser）
+			isAuthorized = interaction.user.id === client.application.owner.id;
+		} else if (client.application.team) {
+			// 旧形式のチーム所有の場合
+			isAuthorized = client.application.team.members?.some(member => member.user.id === interaction.user.id);
+		}
 
 		embed.addFields({
 			name: "Your Access",
