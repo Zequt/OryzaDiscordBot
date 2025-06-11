@@ -40,8 +40,10 @@ module.exports = {
             
             console.log(`[ask] メッセージID ${messageId} 以降のメッセージを取得開始...`);
 
-            // 指定されたメッセージを追加
-            messagesForReference.set(startMessage.id, startMessage);
+            // 指定されたメッセージを追加（ボットメッセージでない場合のみ）
+            if (!startMessage.author.bot) {
+                messagesForReference.set(startMessage.id, startMessage);
+            }
 
             while (true) {
                 const fetched = await channel.messages.fetch({
@@ -55,7 +57,10 @@ module.exports = {
                 }
 
                 fetched.forEach(msg => {
-                    messagesForReference.set(msg.id, msg);
+                    // ボット自身のメッセージは除外
+                    if (!msg.author.bot) {
+                        messagesForReference.set(msg.id, msg);
+                    }
                 });
 
                 lastId = fetched.first().id;
@@ -73,7 +78,7 @@ module.exports = {
             const sortedMessages = messagesForReference.sort((a, b) => a.createdTimestamp - b.createdTimestamp);
 
             const formattedHistory = sortedMessages
-                .map(msg => `${msg.author.username} (${msg.author.bot ? 'Bot' : 'User'}): ${msg.content}`)
+                .map(msg => `${msg.author.username}: ${msg.content}`)
                 .join('\n');
 
             const prompt = `
