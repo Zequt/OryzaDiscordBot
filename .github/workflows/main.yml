@@ -12,14 +12,15 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Install dependencies
-      run: npm install
-
     - name: Copy new code to PM2's working directory
       run: rsync -av --delete . /home/yuuma/ドキュメント/GitHub/OryzaDiscordBot/
 
+    - name: Install dependencies in PM2's working directory
+      run: npm install
+      working-directory: /home/yuuma/ドキュメント/GitHub/OryzaDiscordBot/
+
     - name: Restart Bot with pm2
-      run: pm2 restart OryzaDiscordBot
+      run: pm2 restart OryzaDiscordBot --update-env
       env:
         DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
         DISCORD_CLIENT_ID: ${{ secrets.DISCORD_CLIENT_ID }}
