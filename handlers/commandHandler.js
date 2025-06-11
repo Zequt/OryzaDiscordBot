@@ -35,7 +35,8 @@ function loadCommands(client) {
         }
     }
     
-    client.application.commands.set(commandsArray);
+    // Note: コマンドの登録はdeploy-commands.jsで行うため、ここでは登録しない
+    // client.application.commands.set(commandsArray);
     return console.log(table.toString(), "\n Commands Loaded");
 }
 
