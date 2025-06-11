@@ -28,10 +28,25 @@ module.exports = {
 		// Block non-devs
 		await client.application.fetch();
 		
+		console.log('=== DETAILED DEBUG INFO ===');
+		console.log(`User ID: ${user.id}`);
+		console.log(`Application Owner:`, client.application.owner);
+		console.log(`Application Team:`, client.application.team);
+		
+		if (client.application.team) {
+			console.log(`Team Members:`, client.application.team.members);
+			client.application.team.members.forEach((member, index) => {
+				console.log(`Member ${index}:`, member.user.id, member.user.username);
+			});
+		}
+		
 		// チームアプリケーションかどうかをチェック
 		const isAuthorized = client.application.owner 
 			? user.id === client.application.owner.id  // 個人所有の場合
 			: client.application.team?.members.some(member => member.user.id === user.id); // チーム所有の場合
+		
+		console.log(`Is Authorized: ${isAuthorized}`);
+		console.log('=== END DEBUG INFO ===');
 		
 		if (!isAuthorized) {
 			return interaction.reply({
