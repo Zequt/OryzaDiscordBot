@@ -11,6 +11,7 @@ const { User, Message, GuildMember, ThreadMember, Channel } = Partials;
 const { loadEvents } = require('./handlers/eventHandler');
 const { loadCommands } = require('./handlers/commandHandler');
 const { loadErrors } = require('./handlers/errorHandler');
+const { deployCommands } = require('./utils/deployCommands');
 
 // クライアントインスタンスと呼ばれるオブジェクトを作成します
 const client = new Client({ 
@@ -36,11 +37,21 @@ client.commands = new Collection();
         //--await mongoose.connect(mongoURI_old);
         //--console.log("connected mongoDB");
         // Discordbot login + load using loaders
-        client.login(client.config.token).then(() => {
+        client.login(client.config.token).then(async () => {
             console.log("client login");
             loadEvents(client);
             loadCommands(client);
             loadErrors(client);
+            
+            // Deploy commands automatically
+            console.log("Deploying commands...");
+            const deploySuccess = await deployCommands(client);
+            if (deploySuccess) {
+                console.log("Commands deployed successfully");
+            } else {
+                console.error("Failed to deploy commands - bot will continue running");
+            }
+            
             console.log("loaded everything");
         });
     } catch (err) {

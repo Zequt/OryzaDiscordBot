@@ -16,7 +16,9 @@ OryzaDiscordBot/
 ├── commands/
 │   ├── basic commands/
 │   │   ├── ping.js          # 基本的なpingコマンド
-│   │   └── ask.js           # Gemini AIを使用した質問応答コマンド
+│   │   ├── ask.js           # Gemini AIを使用した質問応答コマンド
+│   │   ├── remind.js        # リマインダー機能
+│   │   └── developers.js    # 開発者情報表示
 │   └── private commands/
 │       ├── reload.js        # コマンドリロード
 │       └── runningServer.js # サーバー状態確認
@@ -24,11 +26,16 @@ OryzaDiscordBot/
 │   ├── interactionCreate/
 │   │   └── interactionCreate.js  # スラッシュコマンド処理
 │   └── ready/
-│       └── ready.js             # ボット起動時処理（Gemini AI初期化含む）
+│       ├── ready.js             # ボット起動時処理（Gemini AI初期化）
+│       └── reminderInit.js      # リマインダーシステム初期化
 ├── handlers/
 │   ├── commandHandler.js    # コマンド登録ハンドラー
 │   ├── errorHandler.js      # エラー処理ハンドラー
 │   └── eventHandler.js      # イベント処理ハンドラー
+├── utils/
+│   └── reminderManager.js   # リマインダーデータ管理
+├── data/
+│   └── reminders.json       # リマインダーデータ保存（自動生成）
 ├── .github/workflows/
 │   └── main.yml            # GitHub Actions設定
 ├── index.js                # メインエントリーポイント
@@ -49,6 +56,7 @@ GitHub Secretsで管理される環境変数：
 ### コマンド
 - `/ping`: ボットの応答時間を確認
 - `/ask <message_id> <question>`: 指定されたメッセージID以降のすべてのメッセージを参照してAIが質問に回答
+- `/remind set|list|delete`: リマインダーの設定・一覧表示・削除
 - `/developers`: ボットの開発者情報とチームメンバーを表示
 - `/reload commands|events|guild`: コマンド・イベント・ギルドコマンドをリロード（プライベート）
 - `/showrunserver`: サーバー実行状態を確認（プライベート）
@@ -61,6 +69,14 @@ GitHub Secretsで管理される環境変数：
 - 長い回答は自動的に複数メッセージに分割
 - 安全性チェック機能内蔵
 - 無効なメッセージIDの場合はエラーメッセージを表示
+
+### Remind コマンド詳細
+- `/remind set <time> <message>`: リマインダーを設定（時間形式: 30s, 30m, 2h, 1d）
+- `/remind list`: 設定中のリマインダー一覧を表示
+- `/remind delete <id>`: 指定IDのリマインダーを削除
+- 最大7日間のリマインダー設定が可能
+- JSONファイル（data/reminders.json）で永続化
+- ボット再起動時も自動復元・タイマー設定
 
 ## デプロイメント
 GitHub Actionsによる自動デプロイ：
@@ -75,6 +91,21 @@ GitHub Actionsによる自動デプロイ：
 - 新しい環境変数追加時はGitHub Actionsワークフローも更新
 - 全てのコマンドの`execute`関数は`interaction`と`client`の2つの引数を受け取る
 - askコマンドでGemini AIを使用する場合は`client.genAI`からアクセスする
+
+## 機能拡張の仕組み
+### コマンド追加
+- **自動検出**: commandHandler.jsがcommandsフォルダ内のサブフォルダを再帰的にスキャン
+- **ファイル追加のみ**: 既存ファイルを変更せずに新しい`.js`ファイルを追加するだけで機能する
+- **必須プロパティ**: `data`（SlashCommandBuilder）と`execute`関数が必要
+- **ホットリロード**: `/reload commands`で動的にコマンドを再読み込み可能
+- **エラーハンドリング**: 不正なコマンドファイルは自動でスキップされ、ログに記録
+
+### イベント追加
+- **自動検出**: eventHandler.jsがeventsフォルダ内のサブフォルダを再帰的にスキャン  
+- **ファイル追加のみ**: 既存ファイルを変更せずに新しい`.js`ファイルを追加するだけで機能する
+- **必須プロパティ**: `name`（イベント名）と`execute`関数が必要
+- **オプション**: `once`（一度だけ実行）、`rest`（REST API関連）プロパティをサポート
+- **ホットリロード**: `/reload events`で動的にイベントを再読み込み可能
 
 ## 権限管理
 ### Private Commands
@@ -91,6 +122,17 @@ npm run lint   # リント実行（設定があれば）
 npm run build  # ビルド実行（設定があれば）
 ```
 
+## ローカルテスト
+### Windows用バッチファイル
+```batch
+local-test.bat
+```
+- 環境変数を対話型で入力
+- 必須項目（DISCORD_TOKEN、DISCORD_CLIENT_ID）とオプション項目を区別
+- Node.js・依存関係の存在確認
+- 自動でnpm installを実行（必要時）
+- ボット起動とエラーハンドリング
+
 ## トラブルシューティング
 - Gemini API関連エラー: GEMINI_API_KEYの設定を確認
 - Discord接続エラー: DISCORD_TOKENの有効性を確認
@@ -106,3 +148,6 @@ npm run build  # ビルド実行（設定があれば）
 - **developersコマンド追加**: ボットの開発者情報とチームメンバーを表示する一般コマンド
 - **権限チェック統一**: チーム所有・個人所有の両方に対応した統一的な権限チェック実装
 - **Discord.js v14対応**: `client.application.owner`の型判定による正確なチーム/個人判別
+- **リマインダー機能追加**: `/remind`コマンドとJSONファイルによる永続化機能を実装
+- **機能拡張システム改善**: コマンド・イベントともに既存ファイルを変更せずに新しいファイル追加のみで機能拡張可能に
+- **自動コマンドデプロイ**: ボット起動時に自動でスラッシュコマンドをDiscordにデプロイ
