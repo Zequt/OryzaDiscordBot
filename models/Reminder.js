@@ -8,8 +8,7 @@ const reminderSchema = new mongoose.Schema({
     },
     userId: {
         type: String,
-        required: true,
-        index: true
+        required: true
     },
     message: {
         type: String,
@@ -17,8 +16,7 @@ const reminderSchema = new mongoose.Schema({
     },
     time: {
         type: Date,
-        required: true,
-        index: true
+        required: true
     },
     channelId: {
         type: String,
@@ -36,7 +34,7 @@ const reminderSchema = new mongoose.Schema({
     timestamps: true
 });
 
-// Index for efficient queries
+// Compound indexes for efficient queries
 reminderSchema.index({ userId: 1, time: 1 });
 reminderSchema.index({ time: 1 });
 

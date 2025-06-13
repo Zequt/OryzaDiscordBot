@@ -6,19 +6,57 @@ const { Client, EmbedBuilder } = require('discord.js');
 
 async function loadErrors(client) {
     async function logErr(description, consoleLog1, consoleLog2) {
-        //console.log(consoleLog1);
-        //console.log(consoleLog2);
-        if(consoleLog1 == "" && consoleLog2 == "") {
-            return;
-        }
+        try {
+            //console.log(consoleLog1);
+            //console.log(consoleLog2);
+            if(consoleLog1 == "" && consoleLog2 == "") {
+                return;
+            }
 
-        let botCh = await client.channels.cache.get(client.config.errReportChId);
-        if (!botCh) botCh = await client.application.owner; //DM when unable to get bot-channel obj
-    
-        await botCh.send({content: `${client.application.owner}`, embeds: [new EmbedBuilder()
-            .setTitle("📨 Anti-Crash Report")
-            .setDescription("Detected system crash.\nRescued.\n\n" + description)
-        ]});
+            let botCh = null;
+            
+            // Try to get error report channel
+            if (client.config.errReportChId) {
+                botCh = client.channels.cache.get(client.config.errReportChId);
+                if (!botCh) {
+                    try {
+                        botCh = await client.channels.fetch(client.config.errReportChId);
+                    } catch (error) {
+                        console.warn('[ERROR_HANDLER] Could not fetch error report channel:', error.message);
+                    }
+                }
+            }
+
+            // Fallback to DM if channel not available
+            if (!botCh) {
+                try {
+                    const owner = await client.application.fetch();
+                    if (owner.owner) {
+                        botCh = await owner.owner.createDM();
+                    }
+                } catch (error) {
+                    console.warn('[ERROR_HANDLER] Could not create DM with owner:', error.message);
+                }
+            }
+
+            // Send error report if we have a valid channel
+            if (botCh && botCh.send) {
+                await botCh.send({
+                    content: `<@${client.application.owner?.id || 'Unknown'}>`,
+                    embeds: [new EmbedBuilder()
+                        .setTitle("📨 Anti-Crash Report")
+                        .setDescription("Detected system crash.\nRescued.\n\n" + description)
+                        .setTimestamp()
+                    ]
+                });
+            } else {
+                console.warn('[ERROR_HANDLER] No valid channel available for error reporting');
+                console.warn('[ERROR_HANDLER] Error details:', description);
+            }
+        } catch (error) {
+            console.error('[ERROR_HANDLER] Failed to send error report:', error);
+            console.error('[ERROR_HANDLER] Original error:', description);
+        }
         return;
     };
 
