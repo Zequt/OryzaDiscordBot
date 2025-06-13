@@ -129,33 +129,41 @@ async function handleSetReminder(interaction, client, userId) {
 }
 
 async function handleListReminders(interaction, client, userId) {
-    const userReminders = client.reminderManager.getUserReminders(userId);
+    try {
+        const userReminders = client.reminderManager.getUserReminders(userId);
 
-    if (!userReminders || userReminders.size === 0) {
+        if (!userReminders || userReminders.size === 0) {
+            await interaction.reply({
+                content: '設定されているリマインダーはありません。',
+                ephemeral: true
+            });
+            return;
+        }
+
+        const embed = new EmbedBuilder()
+            .setColor(0x0099FF)
+            .setTitle('設定中のリマインダー')
+            .setTimestamp();
+
+        const sortedReminders = Array.from(userReminders.values())
+            .sort((a, b) => a.time - b.time);
+
+        sortedReminders.forEach((reminder, index) => {
+            embed.addFields({
+                name: `ID: ${reminder.id}`,
+                value: `**メッセージ:** ${reminder.message}\n**時間:** <t:${Math.floor(reminder.time / 1000)}:R>`,
+                inline: false
+            });
+        });
+
+        await interaction.reply({ embeds: [embed], ephemeral: true });
+    } catch (error) {
+        console.error('[remind] リマインダー一覧表示エラー:', error);
         await interaction.reply({
-            content: '設定されているリマインダーはありません。',
+            content: 'リマインダーの一覧表示中にエラーが発生しました。',
             ephemeral: true
         });
-        return;
     }
-
-    const embed = new EmbedBuilder()
-        .setColor(0x0099FF)
-        .setTitle('設定中のリマインダー')
-        .setTimestamp();
-
-    const sortedReminders = Array.from(userReminders.values())
-        .sort((a, b) => a.time - b.time);
-
-    sortedReminders.forEach((reminder, index) => {
-        embed.addFields({
-            name: `ID: ${reminder.id}`,
-            value: `**メッセージ:** ${reminder.message}\n**時間:** <t:${Math.floor(reminder.time / 1000)}:R>`,
-            inline: false
-        });
-    });
-
-    await interaction.reply({ embeds: [embed], ephemeral: true });
 }
 
 async function handleDeleteReminder(interaction, client, userId) {
