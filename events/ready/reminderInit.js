@@ -1,14 +1,26 @@
 const { Events } = require('discord.js');
-const ReminderManager = require('../../utils/reminderManager');
 
 module.exports = {
     name: Events.ClientReady,
     once: true,
     async execute(client) {
-        // Initialize reminder system
-        client.reminderManager = new ReminderManager();
+        // Initialize reminder system based on MongoDB availability
+        if (client.config.mongoURI) {
+            const ReminderManagerMongo = require('../../utils/reminderManagerMongo');
+            client.reminderManager = new ReminderManagerMongo();
+            
+            // Try to migrate from JSON file if it exists
+            await client.reminderManager.migrateFromJson('./data/reminders.json');
+            console.log('Reminder system initialized (MongoDB)');
+        } else {
+            const ReminderManager = require('../../utils/reminderManager');
+            client.reminderManager = new ReminderManager();
+            console.warn('⚠️  WARNING: Using JSON file storage for reminders');
+            console.warn('⚠️  Consider setting MONGO_URI for better data persistence and performance');
+            console.log('Reminder system initialized (JSON file)');
+        }
+        
         await client.reminderManager.loadReminders();
-        console.log('Reminder system initialized');
 
         // Check for expired reminders on startup and setup timers
         await checkExpiredReminders(client);

@@ -2,6 +2,7 @@
   "dependencies": {
     "ascii-table": "^0.0.9",
     "discord.js": "^14.14.1",
-    "@google/generative-ai": "^0.21.0"
+    "@google/generative-ai": "^0.21.0",
+    "mongoose": "^8.0.0"
   }
 }

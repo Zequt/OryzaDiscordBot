@@ -1,7 +1,7 @@
 //idk
 const fs = require('node:fs');
 const path = require('node:path');
-//-- const mongoose = require('mongoose');
+const mongoose = require('mongoose');
 
 // lib
 const { Client, Collection, GatewayIntentBits, Partials } = require('discord.js');
@@ -34,8 +34,14 @@ client.commands = new Collection();
 
 (async () => {
     try {
-        //--await mongoose.connect(mongoURI_old);
-        //--console.log("connected mongoDB");
+        // MongoDB connection
+        if (client.config.mongoURI) {
+            await mongoose.connect(client.config.mongoURI);
+            console.log("Connected to MongoDB");
+        } else {
+            console.warn("MONGO_URI not found - MongoDB features will not work");
+        }
+        
         // Discordbot login + load using loaders
         client.login(client.config.token).then(async () => {
             console.log("client login");
@@ -55,7 +61,8 @@ client.commands = new Collection();
             console.log("loaded everything");
         });
     } catch (err) {
-        //--console.log(`! failed to connect MongoDB: ${err}`);
+        console.error(`Failed to connect to MongoDB: ${err}`);
+        console.log("Bot will continue running without MongoDB features");
     }
 })();
 console.log("index.js finished");
