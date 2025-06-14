@@ -8,11 +8,7 @@ const DELAY_BETWEEN_CHANNELS = 500; // チャンネル間の待機時間（ミ�
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('export-category')
-        .setDescription('指定したカテゴリー内の全チャンネル・フォーラムのメッセージをCSVファイルとしてエクスポートします。')
-        .addStringOption(option =>
-            option.setName('category_id')
-                .setDescription('エクスポートするカテゴリーのID')
-                .setRequired(true))
+        .setDescription('このチャンネルが属するカテゴリー内の全チャンネル・フォーラムのメッセージをCSVファイルとしてエクスポートします。')
         .addIntegerOption(option =>
             option.setName('limit_per_channel')
                 .setDescription('チャンネルごとのメッセージ数上限（最大1000、デフォルト500）')
@@ -21,17 +17,19 @@ module.exports = {
                 .setMaxValue(1000)),
 
     async execute(interaction, client) {
-        const categoryId = interaction.options.getString('category_id');
         const limitPerChannel = interaction.options.getInteger('limit_per_channel') || 500;
         const guild = interaction.guild;
+        const currentChannel = interaction.channel;
 
         await interaction.deferReply();
 
         try {
-            // カテゴリーを取得
-            const category = guild.channels.cache.get(categoryId);
+            // 現在のチャンネルが属するカテゴリーを取得
+            const category = currentChannel.parent;
             if (!category || category.type !== ChannelType.GuildCategory) {
-                await interaction.editReply({ content: '指定されたカテゴリーIDが見つからないか、カテゴリーチャンネルではありません。' });
+                await interaction.editReply({ 
+                    content: 'このチャンネルはカテゴリーに属していないか、カテゴリーの取得に失敗しました。\nカテゴリー内のチャンネルからコマンドを実行してください。' 
+                });
                 return;
             }
 
