@@ -127,15 +127,25 @@ npm run build  # ビルド実行（設定があれば）
 ```
 
 ## ローカルテスト
-### Windows用バッチファイル
-```batch
-local-test.bat
+### .env を使用したローカル開発
+```bash
+# 1. .env.example を .env にコピー
+cp .env.example .env
+
+# 2. .env ファイルを編集して環境変数を設定
+# 必須: DISCORD_TOKEN, DISCORD_CLIENT_ID
+# オプション: MONGO_URI, ERROR_REPORT_CHANNEL_ID, GEMINI_API_KEY
+
+# 3. 依存関係をインストール
+npm install
+
+# 4. ボットを起動
+npm start
 ```
-- 環境変数を対話型で入力
-- 必須項目（DISCORD_TOKEN、DISCORD_CLIENT_ID）とオプション項目を区別
-- Node.js・依存関係の存在確認
-- 自動でnpm installを実行（必要時）
-- ボット起動とエラーハンドリング
+- `.env` ファイルで環境変数を管理
+- 必須項目: `DISCORD_TOKEN`, `DISCORD_CLIENT_ID`
+- オプション項目: `MONGO_URI`, `ERROR_REPORT_CHANNEL_ID`, `GEMINI_API_KEY`
+- dotenvパッケージで自動的に環境変数を読み込み
 
 ## トラブルシューティング
 - Gemini API関連エラー: GEMINI_API_KEYの設定を確認

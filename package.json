@@ -1,8 +1,16 @@
 {
+  "name": "oryza-discord-bot",
+  "version": "1.0.0",
+  "description": "Discord bot with Gemini AI integration",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
   "dependencies": {
     "ascii-table": "^0.0.9",
     "discord.js": "^14.14.1",
     "@google/generative-ai": "^0.21.0",
-    "mongoose": "^8.0.0"
+    "mongoose": "^8.0.0",
+    "dotenv": "^16.4.5"
   }
 }

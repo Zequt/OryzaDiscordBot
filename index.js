@@ -1,4 +1,5 @@
 //idk
+require('dotenv').config();
 const fs = require('node:fs');
 const path = require('node:path');
 const mongoose = require('mongoose');
