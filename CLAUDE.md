@@ -91,6 +91,10 @@ GitHub Actionsによる自動デプロイ：
 - 新しい環境変数追加時はGitHub Actionsワークフローも更新
 - 全てのコマンドの`execute`関数は`interaction`と`client`の2つの引数を受け取る
 - askコマンドでGemini AIを使用する場合は`client.genAI`からアクセスする
+- **Discord Intents設定**: 新機能追加時は`index.js`で適切なインテンツが有効になっているか確認する
+  - メッセージ関連機能: `GatewayIntentBits.MessageContent`
+  - ギルドメンバー情報: `GatewayIntentBits.GuildMembers`
+  - プレゼンス情報: `GatewayIntentBits.GuildPresences`
 
 ## 機能拡張の仕組み
 ### コマンド追加
