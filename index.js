@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 
 // lib
 const { Client, Collection, GatewayIntentBits, Partials } = require('discord.js');
-const { Guilds, GuildMembers, GuildMessages, MessageContent } = GatewayIntentBits;
+const { Guilds, GuildMembers, GuildMessages, MessageContent, GuildVoiceStates } = GatewayIntentBits;
 const { User, Message, GuildMember, ThreadMember, Channel } = Partials;
 // loaders
 const { loadEvents } = require('./handlers/eventHandler');
@@ -15,7 +15,7 @@ const { deployCommands } = require('./utils/deployCommands');
 
 // クライアントインスタンスと呼ばれるオブジェクトを作成します
 const client = new Client({ 
-    intents: [Guilds, GuildMembers, GuildMessages, MessageContent],
+    intents: [Guilds, GuildMembers, GuildMessages, MessageContent, GuildVoiceStates],
     partials: [User, Message, GuildMember, ThreadMember]
 });
 // We recommend attaching a .commands property to your client instance so that you can access your commands in other files. 
