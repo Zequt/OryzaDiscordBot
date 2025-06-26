@@ -73,21 +73,7 @@ async function handleSetReminder(interaction, client, userId) {
             });
             return;
         }
-        if (delay > 7 * 24 * 60 * 60 * 1000) {
-            await interaction.reply({
-                content: 'リマインダーは最大7日間まで設定できます。',
-                ephemeral: true
-            });
-            return;
-        }
     } else {
-        if (milliseconds > 7 * 24 * 60 * 60 * 1000) {
-            await interaction.reply({
-                content: 'リマインダーは最大7日間まで設定できます。',
-                ephemeral: true
-            });
-            return;
-        }
         remindTime = Date.now() + milliseconds;
     }
     const reminderId = Date.now().toString();
