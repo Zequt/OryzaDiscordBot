@@ -15,7 +15,12 @@ module.exports = {
                 .addStringOption(option =>
                     option.setName('message')
                         .setDescription('リマインダーのメッセージ')
-                        .setRequired(true)))
+                        .setRequired(true))
+                .addStringOption(option =>
+                    option.setName('mention')
+                        .setDescription('リマインダー通知時にメンションするユーザー（省略時は自分）')
+                        .setRequired(false)
+                        .setAutocomplete(true)))
         .addSubcommand(subcommand =>
             subcommand
                 .setName('list')
@@ -30,6 +35,11 @@ module.exports = {
                         .setRequired(true))),
 
     async execute(interaction, client) {
+        if (interaction.isAutocomplete()) {
+            await handleAutocomplete(interaction, client);
+            return;
+        }
+
         const subcommand = interaction.options.getSubcommand();
         const userId = interaction.user.id;
 
@@ -50,6 +60,20 @@ module.exports = {
 async function handleSetReminder(interaction, client, userId) {
     const timeStr = interaction.options.getString('time');
     const message = interaction.options.getString('message');
+    const mentionUserString = interaction.options.getString('mention');
+    
+    let mentionUser = null;
+    if (mentionUserString) {
+        try {
+            mentionUser = await client.users.fetch(mentionUserString);
+        } catch (error) {
+            await interaction.reply({
+                content: '指定されたユーザーが見つかりません。',
+                ephemeral: true
+            });
+            return;
+        }
+    }
 
     const result = parseTimeString(timeStr);
     if (!result) {
@@ -83,7 +107,8 @@ async function handleSetReminder(interaction, client, userId) {
         message,
         time: remindTime,
         channelId: interaction.channelId,
-        guildId: interaction.guildId
+        guildId: interaction.guildId,
+        mentionUserId: mentionUser ? mentionUser.id : userId
     };
 
     try {
@@ -100,7 +125,8 @@ async function handleSetReminder(interaction, client, userId) {
             .addFields(
                 { name: 'メッセージ', value: message },
                 { name: '時間', value: `<t:${Math.floor(remindTime / 1000)}:R>` },
-                { name: 'ID', value: reminderId }
+                { name: 'ID', value: reminderId },
+                { name: '通知対象', value: mentionUser ? `<@${mentionUser.id}>` : '<@' + userId + '>' }
             )
             .setTimestamp();
 
@@ -185,6 +211,47 @@ async function handleDeleteReminder(interaction, client, userId) {
             content: 'リマインダーの削除中にエラーが発生しました。',
             ephemeral: true
         });
+    }
+}
+
+async function handleAutocomplete(interaction, client) {
+    const focusedOption = interaction.options.getFocused(true);
+    
+    if (focusedOption.name === 'mention') {
+        try {
+            const guild = interaction.guild;
+            if (!guild) {
+                await interaction.respond([]);
+                return;
+            }
+
+            await guild.members.fetch();
+            const members = guild.members.cache;
+            
+            const choices = [];
+            const query = focusedOption.value.toLowerCase();
+            
+            for (const [, member] of members) {
+                if (member.user.bot) continue;
+                
+                const username = member.user.username.toLowerCase();
+                const displayName = member.displayName.toLowerCase();
+                
+                if (username.includes(query) || displayName.includes(query)) {
+                    choices.push({
+                        name: `${member.displayName} (@${member.user.username})`,
+                        value: member.user.id
+                    });
+                }
+                
+                if (choices.length >= 25) break;
+            }
+            
+            await interaction.respond(choices);
+        } catch (error) {
+            console.error('[remind] オートコンプリートエラー:', error);
+            await interaction.respond([]);
+        }
     }
 }
 

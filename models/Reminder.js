@@ -10,6 +10,10 @@ const reminderSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    mentionUserId: {
+        type: String,
+        required: false
+    },
     message: {
         type: String,
         required: true

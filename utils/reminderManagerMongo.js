@@ -34,7 +34,8 @@ class ReminderManagerMongo {
                     message: reminder.message,
                     time: reminder.time.getTime(),
                     channelId: reminder.channelId,
-                    guildId: reminder.guildId
+                    guildId: reminder.guildId,
+                    mentionUserId: reminder.mentionUserId
                 });
             });
             
@@ -53,7 +54,8 @@ class ReminderManagerMongo {
                 message: reminder.message,
                 time: new Date(reminder.time),
                 channelId: reminder.channelId,
-                guildId: reminder.guildId
+                guildId: reminder.guildId,
+                mentionUserId: reminder.mentionUserId
             });
             
             await newReminder.save();
@@ -94,7 +96,8 @@ class ReminderManagerMongo {
                     message: reminder.message,
                     time: reminder.time.getTime(),
                     channelId: reminder.channelId,
-                    guildId: reminder.guildId
+                    guildId: reminder.guildId,
+                    mentionUserId: reminder.mentionUserId
                 }
             }));
         } catch (error) {
@@ -168,7 +171,7 @@ class ReminderManagerMongo {
                 .setTimestamp()
                 .setFooter({ text: `リクエスト者: ${(await client.users.fetch(userId)).username}` });
 
-            await channel.send({ content: `<@${userId}>`, embeds: [embed] });
+            await channel.send({ content: `<@${reminder.mentionUserId || userId}>`, embeds: [embed] });
             
             // リマインダーを削除
             await this.deleteReminder(userId, reminderId);
@@ -200,7 +203,8 @@ class ReminderManagerMongo {
                                 message: reminder.message,
                                 time: reminder.time,
                                 channelId: reminder.channelId,
-                                guildId: reminder.guildId
+                                guildId: reminder.guildId,
+                                mentionUserId: reminder.mentionUserId
                             });
                             migratedCount++;
                         }

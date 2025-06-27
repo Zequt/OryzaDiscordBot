@@ -164,6 +164,15 @@ class ReminderManager {
 
             const { EmbedBuilder } = require('discord.js');
             
+            let mentionUserId = reminder.mentionUserId || userId;
+            
+            try {
+                await client.users.fetch(mentionUserId);
+            } catch (error) {
+                console.warn(`[ReminderManager] メンション対象ユーザー ${mentionUserId} が見つかりません。作成者にフォールバック。`);
+                mentionUserId = userId;
+            }
+            
             const embed = new EmbedBuilder()
                 .setColor(0xFFD700)
                 .setTitle('🔔 リマインダー')
@@ -172,7 +181,7 @@ class ReminderManager {
                 .setTimestamp()
                 .setFooter({ text: `リクエスト者: ${(await client.users.fetch(userId)).username}` });
 
-            await channel.send({ content: `<@${userId}>`, embeds: [embed] });
+            await channel.send({ content: `<@${mentionUserId}>`, embeds: [embed] });
             
             // リマインダーを削除
             await this.deleteReminder(userId, reminderId);

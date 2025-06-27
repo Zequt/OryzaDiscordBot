@@ -1,6 +1,7 @@
 # OryzaDiscordBot - プロジェクト情報
 
 ## プロジェクト概要
+Claude.mdを常に最新状態に保つために作業をした後、確実にClaude.mdを更新してください。
 Discord.js v14を使用したDiscordボット。基本的なコマンド機能とGemini AIによる質問応答機能を提供。
 
 ## 技術スタック
@@ -71,12 +72,16 @@ GitHub Secretsで管理される環境変数：
 - 無効なメッセージIDの場合はエラーメッセージを表示
 
 ### Remind コマンド詳細
-- `/remind set <time> <message>`: リマインダーを設定（時間形式: 30s, 30m, 2h, 1d）
+- `/remind set <time> <message> [mention]`: リマインダーを設定（時間形式: 30s, 30m, 2h, 1d）
+  - オプション: `mention` パラメータで通知対象ユーザーを指定可能（省略時は作成者自身）
+  - オートコンプリート: サーバー内の全メンバーを検索可能（オフラインユーザーも含む）
 - `/remind list`: 設定中のリマインダー一覧を表示
 - `/remind delete <id>`: 指定IDのリマインダーを削除
 - 最大7日間のリマインダー設定が可能
 - JSONファイル（data/reminders.json）で永続化
 - ボット再起動時も自動復元・タイマー設定
+- リマインダーデータに `mentionUserId` フィールドを追加して通知対象を管理
+- StringOptionとカスタムオートコンプリートでオフラインユーザーも選択可能
 
 ## デプロイメント
 GitHub Actionsによる自動デプロイ：
