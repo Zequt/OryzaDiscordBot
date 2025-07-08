@@ -44,8 +44,9 @@ client.commands = new Collection();
         }
         
         // Discordbot login + load using loaders
+        console.log("Attempting to login with token:", client.config.token ? "Token exists" : "Token is undefined");
         client.login(client.config.token).then(async () => {
-            console.log("client login");
+            console.log("client login successful");
             loadEvents(client);
             loadCommands(client);
             loadErrors(client);
@@ -60,6 +61,8 @@ client.commands = new Collection();
             }
             
             console.log("loaded everything");
+        }).catch((loginError) => {
+            console.error("Failed to login to Discord:", loginError);
         });
     } catch (err) {
         console.error(`Failed to connect to MongoDB: ${err}`);

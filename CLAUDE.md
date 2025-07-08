@@ -18,6 +18,7 @@ OryzaDiscordBot/
 │   ├── basic commands/
 │   │   ├── ping.js          # 基本的なpingコマンド
 │   │   ├── ask.js           # Gemini AIを使用した質問応答コマンド
+│   │   ├── youtube-summary.js # YouTube動画要約コマンド
 │   │   ├── remind.js        # リマインダー機能
 │   │   └── developers.js    # 開発者情報表示
 │   └── private commands/
@@ -26,6 +27,8 @@ OryzaDiscordBot/
 ├── events/
 │   ├── interactionCreate/
 │   │   └── interactionCreate.js  # スラッシュコマンド処理
+│   ├── messageCreate/
+│   │   └── messageCreate.js     # YouTubeリンク自動検出
 │   └── ready/
 │       ├── ready.js             # ボット起動時処理（Gemini AI初期化）
 │       └── reminderInit.js      # リマインダーシステム初期化
@@ -57,6 +60,7 @@ GitHub Secretsで管理される環境変数：
 ### コマンド
 - `/ping`: ボットの応答時間を確認
 - `/ask <message_id> <question>`: 指定されたメッセージID以降のすべてのメッセージを参照してAIが質問に回答
+- `/youtube-summary <url>`: YouTube動画の字幕を取得して構造的に要約
 - `/remind set|list|delete`: リマインダーの設定・一覧表示・削除
 - `/developers`: ボットの開発者情報とチームメンバーを表示
 - `/reload commands|events|guild`: コマンド・イベント・ギルドコマンドをリロード（プライベート）
@@ -70,6 +74,16 @@ GitHub Secretsで管理される環境変数：
 - 長い回答は自動的に複数メッセージに分割
 - 安全性チェック機能内蔵
 - 無効なメッセージIDの場合はエラーメッセージを表示
+
+### YouTube Summary コマンド詳細
+- YouTube動画の字幕を自動取得して構造的に要約
+- 対応URL形式: youtube.com/watch?v=、youtu.be/、youtube.com/embed/
+- 字幕言語: 日本語を優先、英語をフォールバック
+- 要約内容: 主要ポイント、動画構成、キーワード、視聴者への価値
+- 使用モデル: gemini-2.5-flash-preview-04-17
+- 安全性チェック機能内蔵
+- 字幕なし動画、無効URL、API エラーに対応
+- 自動検出機能: YouTubeリンク投稿時に要約機能を提案
 
 ### Remind コマンド詳細
 - `/remind set <time> <message> [mention]`: リマインダーを設定（時間形式: 30s, 30m, 2h, 1d）
@@ -160,6 +174,9 @@ npm start
 - reload機能が動作しない場合: `commandHandler.js`でキャッシュクリアが正しく実行されているか確認
 
 ## 最近の修正履歴
+- **YouTube動画要約機能追加**: `/youtube-summary`コマンドと自動検出機能を実装
+- **ytdl-coreライブラリ追加**: YouTube動画情報と字幕取得機能を追加
+- **messageCreateイベント追加**: YouTubeリンクの自動検出と要約提案機能を実装
 - **コマンド引数の統一**: 全てのコマンドで`execute(interaction, client)`の形式に統一
 - **reload機能の修正**: モジュールキャッシュクリアとエラーハンドリングを追加
 - **ping/askコマンドの修正**: interactionCreate.jsでの引数渡しを統一化とWebSocket ping エラー対応
