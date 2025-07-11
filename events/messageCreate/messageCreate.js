@@ -1,5 +1,5 @@
 const { Events, EmbedBuilder } = require('discord.js');
-const ytdl = require('ytdl-core');
+const ytdl = require('@distube/ytdl-core');
 
 // YouTube URLの正規表現パターン
 const YOUTUBE_URL_PATTERN = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
