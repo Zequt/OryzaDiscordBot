@@ -3,6 +3,7 @@ require('dotenv').config();
 const fs = require('node:fs');
 const path = require('node:path');
 const mongoose = require('mongoose');
+const BotSetting = require('./models/BotSetting');
 
 // lib
 const { Client, Collection, GatewayIntentBits, Partials } = require('discord.js');
