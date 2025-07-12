@@ -235,7 +235,7 @@ JSON形式の回答:`;
             }
 
             await interaction.editReply({
-                content: `ナレッジをフォーラムチャンネル **${forumChannel.name}** に投稿しました: ${newThread.url}`
+                content: `${newThread.url}`
             });
 
         } catch (error) {
