@@ -142,7 +142,7 @@ JSON形式の回答:`;
                 return;
             }
 
-            const modelName = "gemini-2.5-flash-preview-04-17";
+            const modelName = "gemini-2.5-flash";
             const model = genAI.getGenerativeModel({
                 model: modelName,
                 generationConfig: {

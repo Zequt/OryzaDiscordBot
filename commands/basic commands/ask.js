@@ -106,7 +106,7 @@ ${question}
                 return;
             }
 
-            const modelName = "gemini-2.5-flash-preview-04-17"; // devBook.md に記載のモデル名 (summarize.jsでは "gemini-2.5-flash-preview-04-17" を使用)
+            const modelName = "gemini-2.5-flash"; // devBook.md に記載のモデル名 (summarize.jsでは "gemini-2.5-flash" を使用)
                                                       // プロジェクト内で一貫性を持たせるか、設定ファイルで管理することを推奨します。
                                                       // ここでは devBook.md の指定に従います。
             const model = genAI.getGenerativeModel({ model: modelName });
