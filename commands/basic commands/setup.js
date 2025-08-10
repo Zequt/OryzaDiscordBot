@@ -30,7 +30,7 @@ module.exports = {
                 .setRequired(false)),
 
     async execute(interaction, client) {
-        await interaction.deferReply();
+        await interaction.deferReply({ ephemeral: true });
 
         try {
             const name = interaction.options.getString('name');
